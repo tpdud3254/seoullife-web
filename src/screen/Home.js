@@ -1,9 +1,9 @@
 import { Helmet } from "react-helmet-async";
 import styled from "styled-components";
 import Map from "../component/Map";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useReactiveVar } from "@apollo/client";
+import { gql, useLazyQuery, useReactiveVar } from "@apollo/client";
 import { isAdminVar, isLoggedInVar } from "../apollo";
 
 const Container = styled.div`
@@ -36,13 +36,41 @@ const Button = styled.div`
     }
 `;
 
+const FIND_ROOM = gql`
+    query findRoom($id: Int!) {
+        findRoom(id: $id) {
+            roomId
+        }
+    }
+`;
+
 const callNumber = process.env.REACT_APP_CALL_NUMBER;
 
 function Home() {
     const isLoggedIn = useReactiveVar(isLoggedInVar);
     const isAdmin = useReactiveVar(isAdminVar);
+    const navigate = useNavigate();
+    const [startQueryFn] = useLazyQuery(FIND_ROOM);
 
-    console.log(isLoggedIn);
+    const goToLogin = () => {
+        navigate("/login");
+    };
+
+    const goToRooms = () => {
+        navigate("/rooms");
+    };
+
+    const goToRoom = () => {
+        startQueryFn({
+            variables: { id: isLoggedIn },
+        }).then((result) => {
+            console.log(result?.data?.findRoom?.roomId);
+            navigate("/room", {
+                state: { roomId: result?.data?.findRoom?.roomId },
+            });
+        });
+    };
+
     return (
         <Container>
             <Helmet>
@@ -54,18 +82,16 @@ function Home() {
                     <Button>
                         <a href={`tel:${callNumber}`}>Call</a>
                     </Button>
-                    <Button>
-                        <Link
-                            to={
-                                isLoggedIn
-                                    ? isAdmin
-                                        ? "/rooms"
-                                        : "room"
-                                    : "/login"
-                            }
-                        >
-                            Message
-                        </Link>
+                    <Button
+                        onClick={
+                            isLoggedIn
+                                ? isAdmin
+                                    ? goToRooms
+                                    : goToRoom
+                                : goToLogin
+                        }
+                    >
+                        Message
                     </Button>
                 </ButtonContainer>
             </Warrper>

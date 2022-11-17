@@ -3,10 +3,11 @@ import styled from "styled-components";
 import { GoogleLogin } from "@react-oauth/google";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import * as jose from "jose";
-import { gql, useMutation } from "@apollo/client";
+import { gql, useLazyQuery, useMutation } from "@apollo/client";
 import { useState } from "react";
 import { logUserIn, setAdminVar } from "../apollo";
 import { useNavigate } from "react-router-dom";
+const clientAccount = require("../client_secret.json");
 
 const LOGIN_MUTATION = gql`
     mutation login($email: String!) {
@@ -18,11 +19,20 @@ const LOGIN_MUTATION = gql`
     }
 `;
 
-const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+const FIND_ROOM = gql`
+    query findRoom($id: Int!) {
+        findRoom(id: $id) {
+            roomId
+        }
+    }
+`;
+const clientId = clientAccount["web"]["client_id"];
 
 function Login() {
     const navigate = useNavigate();
-    const loginUpdate = (cache, result) => {
+    const [startQueryFn] = useLazyQuery(FIND_ROOM);
+
+    const loginUpdate = async (cache, result) => {
         const {
             data: {
                 login: { ok, userId, isAdmin },
@@ -35,7 +45,14 @@ function Login() {
             if (isAdmin) {
                 navigate("/rooms");
             } else {
-                navigate("/room");
+                startQueryFn({
+                    variables: { id: userId },
+                }).then((result) => {
+                    console.log(result?.data?.findRoom?.roomId);
+                    navigate("/room", {
+                        state: { roomId: result?.data?.findRoom?.roomId },
+                    });
+                });
             }
         }
     };

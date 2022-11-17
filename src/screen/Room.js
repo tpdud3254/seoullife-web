@@ -68,7 +68,7 @@ function Room() {
     const {
         state: { roomId },
     } = useLocation();
-
+    console.log("Room id :", roomId);
     const { data, loading, subscribeToMore } = useQuery(SEE_ROOM_QUERY, {
         variables: { id: roomId },
         fetchPolicy: "network-only",
