@@ -42,7 +42,10 @@ const wsLink = new GraphQLWsLink(
 // });
 
 const httpLink = createHttpLink({
-    uri: "http://localhost:4001/graphql",
+    uri:
+        process.env.NODE_ENV === "production"
+            ? "https://instaclone-backend-ksy.herokuapp.com/graphql"
+            : "http://localhost:4001/graphql",
 });
 
 const splitLink = split(
