@@ -5,6 +5,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { gql, useLazyQuery, useReactiveVar } from "@apollo/client";
 import { isAdminVar, isLoggedInVar } from "../apollo";
+import { useMediaQuery } from "react-responsive";
+import {
+    useDesktopMediaQuery,
+    useIsNotMobile,
+    useMobileMediaQuery,
+    useTabletMediaQuery,
+} from "../hooks/mediaQueryHooks";
+import { Default, Mobile } from "../styles";
 
 const Container = styled.div`
     display: flex;
@@ -36,6 +44,8 @@ const Button = styled.div`
     }
 `;
 
+const MobileButtonContainer = styled(ButtonContainer)``;
+const MobileButton = styled(Button)``;
 const FIND_ROOM = gql`
     query findRoom($id: Int!) {
         findRoom(id: $id) {
@@ -47,6 +57,11 @@ const FIND_ROOM = gql`
 const callNumber = process.env.REACT_APP_CALL_NUMBER;
 
 function Home() {
+    const isDesktop = useDesktopMediaQuery({ minWidth: 992 });
+    const isTablet = useTabletMediaQuery({ minWidth: 768, maxWidth: 991 });
+    const isMobile = useMobileMediaQuery({ maxWidth: 767 });
+    const isNotMobile = useIsNotMobile({ minWidth: 768 });
+
     const isLoggedIn = useReactiveVar(isLoggedInVar);
     const isAdmin = useReactiveVar(isAdminVar);
     const navigate = useNavigate();
@@ -78,22 +93,42 @@ function Home() {
             </Helmet>
             <Warrper>
                 <Map />
-                <ButtonContainer>
-                    <Button>
-                        <a href={`tel:${callNumber}`}>Call</a>
-                    </Button>
-                    <Button
-                        onClick={
-                            isLoggedIn
-                                ? isAdmin
-                                    ? goToRooms
-                                    : goToRoom
-                                : goToLogin
-                        }
-                    >
-                        Message
-                    </Button>
-                </ButtonContainer>
+                <Default>
+                    <ButtonContainer>
+                        <Button>
+                            <a href={`tel:${callNumber}`}>Call</a>
+                        </Button>
+                        <Button
+                            onClick={
+                                isLoggedIn
+                                    ? isAdmin
+                                        ? goToRooms
+                                        : goToRoom
+                                    : goToLogin
+                            }
+                        >
+                            Message
+                        </Button>
+                    </ButtonContainer>
+                </Default>
+                <Mobile>
+                    <MobileButtonContainer>
+                        <MobileButton>
+                            <a href={`tel:${callNumber}`}>Call</a>
+                        </MobileButton>
+                        <MobileButton
+                            onClick={
+                                isLoggedIn
+                                    ? isAdmin
+                                        ? goToRooms
+                                        : goToRoom
+                                    : goToLogin
+                            }
+                        >
+                            Message
+                        </MobileButton>
+                    </MobileButtonContainer>
+                </Mobile>
             </Warrper>
         </Container>
     );
