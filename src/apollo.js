@@ -28,7 +28,10 @@ export const setAdminVar = (bool) => {
 
 const wsLink = new GraphQLWsLink(
     createClient({
-        url: "ws://localhost:4001/graphql",
+        url:
+            process.env.NODE_ENV === "production"
+                ? "wss://instaclone-backend-ksy.herokuapp.com/graphql"
+                : "ws://localhost:4001/graphql",
     })
 );
 
