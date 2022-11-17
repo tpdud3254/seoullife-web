@@ -17,10 +17,39 @@ const SEE_ROOMS_QUERY = gql`
     }
 `;
 
-const Container = styled.div``;
-const Room = styled.div``;
-const Email = styled.div``;
-const UnreadText = styled.div``;
+const Container = styled.div`
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 50px;
+`;
+const Wrapper = styled.div`
+    background-color: white;
+    padding: 20px 40px;
+    border-radius: 15px;
+`;
+const Divider = styled.div`
+    height: 1px;
+    background-color: rgb(0, 0, 0, 0.5);
+    width: 100%;
+`;
+const Room = styled.div`
+    padding: 10px 50px 10px 50px;
+    &:hover {
+        border-radius: 10px;
+        background-color: #cbdcf644;
+    }
+`;
+const Email = styled.div`
+    font-size: 15px;
+`;
+const UnreadText = styled.div`
+    margin-top: 10px;
+    font-size: 17px;
+    color: ${(props) =>
+        props.unreadTotal > 0 ? "tomato" : "rgb(0, 0, 0, 0.3)"};
+`;
 const LoadingText = styled.div``;
 
 function Rooms() {
@@ -42,16 +71,25 @@ function Rooms() {
 
     return (
         <Container>
-            {loading ? (
-                <LoadingText>loading...</LoadingText>
-            ) : (
-                data?.seeRooms.map((room) => (
-                    <Room key={room.id} onClick={() => goToRoom(room.id)}>
-                        <Email>{getEmail(room.users)}</Email>
-                        <UnreadText>{`${room.unreadTotal}개의 읽지 않은 메세지가 있습니다`}</UnreadText>
-                    </Room>
-                ))
-            )}
+            <Wrapper>
+                {loading ? (
+                    <LoadingText>loading...</LoadingText>
+                ) : (
+                    data?.seeRooms.map((room, index) => (
+                        <div key={room.id}>
+                            <Room onClick={() => goToRoom(room.id)}>
+                                <Email>{getEmail(room.users)}</Email>
+                                <UnreadText
+                                    unreadTotal={room.unreadTotal}
+                                >{`${room.unreadTotal}개의 읽지 않은 메세지가 있습니다`}</UnreadText>
+                            </Room>
+                            {data.seeRooms.length === index ? null : (
+                                <Divider />
+                            )}
+                        </div>
+                    ))
+                )}
+            </Wrapper>
         </Container>
     );
 }

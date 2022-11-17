@@ -5,11 +5,12 @@ import {
     useQuery,
     useReactiveVar,
 } from "@apollo/client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { isAdminVar, isLoggedInVar } from "../apollo";
+import { useIsNotMobile } from "../hooks/mediaQueryHooks";
 
 const SEE_ROOM_QUERY = gql`
     query seeRoom($id: Int!) {
@@ -19,10 +20,12 @@ const SEE_ROOM_QUERY = gql`
                 id
                 payload
                 user {
+                    id
                     email
                 }
                 read
             }
+            unreadTotal
         }
     }
 `;
@@ -33,6 +36,7 @@ const ROOM_UPDATES = gql`
             id
             payload
             user {
+                id
                 email
             }
             read
@@ -60,10 +64,87 @@ const SEND_MESSAGE_MUTATION = gql`
     }
 `;
 
+const READ_MESSAGE_MUTATION = gql`
+    mutation readMessage($userId: Int!, $roomId: Int!) {
+        readMessage(userId: $userId, roomId: $roomId) {
+            ok
+        }
+    }
+`;
+
+const Container = styled.div`
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: ${(props) => (props.isNotMobile ? "50px" : "0px")};
+`;
+const Wrapper = styled.div`
+    background-color: white;
+    padding: 20px 40px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 500px;
+    height: 80%;
+    max-height: 600px;
+    overflow: scroll;
+    display: flex;
+    flex-direction: column;
+`;
+
+const Message = styled.div`
+    width: 100%;
+    display: flex;
+    flex-direction: ${(porps) => (porps.me ? "row-reverse" : "row")};
+    align-items: flex-end;
+`;
+const Email = styled.div`
+    font-size: 15px;
+`;
+const MessageText = styled.div`
+    padding: 10px 15px 10px 15px;
+    width: fit-content;
+    background-color: ${(props) => (props.me ? "#FFB231aa" : "#86bfb9aa")};
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-size: 17px;
+    color: #00000099;
+    border-radius: 15px;
+`;
+
+const Form = styled.form`
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: ${(props) => (props.isNotMobile ? "20px" : "5px")};
+`;
+const Input = styled.input`
+    border: 1px solid black;
+    border-radius: 20px;
+    width: 80%;
+    height: 30px;
+    padding: 5px 10px 5px 10px;
+`;
+const Button = styled.input`
+    width: 45px;
+    border-radius: 20px;
+    height: 30px;
+    padding: 5px 10px 5px 10px;
+    background-color: tomato;
+    text-align: center;
+    margin-left: 10px;
+    color: white;
+`;
 function Room() {
+    const isNotMobile = useIsNotMobile();
     const curUserId = useReactiveVar(isLoggedInVar);
     const isAdmin = useReactiveVar(isAdminVar);
     const [subscribed, setSubscribed] = useState(false);
+    const [readMessageMutation, { loading: readingMessage }] = useMutation(
+        READ_MESSAGE_MUTATION
+    );
 
     const {
         state: { roomId },
@@ -198,6 +279,18 @@ function Room() {
             });
             setSubscribed(true);
         }
+
+        if (data?.seeRoom.unreadTotal > 0) {
+            readMessageMutation({
+                variables: {
+                    userId: curUserId,
+                    roomId,
+                },
+            });
+        }
+
+        let last = document.getElementById("last");
+        last.scrollTop = last.scrollHeight;
     }, [data]);
 
     const {
@@ -223,24 +316,44 @@ function Room() {
         });
     };
     return (
-        <div>
-            {data?.seeRoom?.messages.map((message) => (
-                <ul key={message.id}>
-                    <li>
-                        {message.user.email} / {message.payload}
-                    </li>
-                </ul>
-            ))}
-            <form onSubmit={handleSubmit(onSubmitValid)}>
-                <input
+        <Container isNotMobile={isNotMobile}>
+            <Wrapper id="last">
+                {data?.seeRoom?.messages.map((message, index) => (
+                    <Message
+                        key={message.id}
+                        me={message.user.id === curUserId ? true : false}
+                    >
+                        <div>
+                            {message.user.id === curUserId ? null : (
+                                <Email>{message.user.email}</Email>
+                            )}
+
+                            <MessageText
+                                me={
+                                    message.user.id === curUserId ? true : false
+                                }
+                            >
+                                {message.payload}
+                            </MessageText>
+                        </div>
+                    </Message>
+                ))}
+            </Wrapper>
+
+            <Form
+                onSubmit={handleSubmit(onSubmitValid)}
+                isNotMobile={isNotMobile}
+            >
+                <Input
                     type="text"
                     {...register("message", {
                         required: true,
                     })}
+                    placeholder="메세지를 입력하세요."
                 />
-                <input type="submit" />
-            </form>
-        </div>
+                <Button type="submit" value="보내기" />
+            </Form>
+        </Container>
     );
 }
 
