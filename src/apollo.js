@@ -28,10 +28,10 @@ export const setAdminVar = (bool) => {
 
 const wsLink = new GraphQLWsLink(
     createClient({
-        url:
-            process.env.NODE_ENV === "production"
-                ? "wss://instaclone-backend-ksy.herokuapp.com/graphql"
-                : "ws://localhost:4001/graphql",
+        url: "wss://seoul-life-webserver.herokuapp.com/graphql",
+        // process.env.NODE_ENV === "production"
+        //     ? "wss://instaclone-backend-ksy.herokuapp.com/graphql"
+        //     : "ws://localhost:4001/graphql",
     })
 );
 
@@ -45,10 +45,10 @@ const wsLink = new GraphQLWsLink(
 // });
 
 const httpLink = createHttpLink({
-    uri:
-        process.env.NODE_ENV === "production"
-            ? "https://instaclone-backend-ksy.herokuapp.com/graphql"
-            : "http://localhost:4001/graphql",
+    uri: "https://seoul-life-webserver.herokuapp.com/graphql",
+    // process.env.NODE_ENV === "production"
+    //     ? "https://instaclone-backend-ksy.herokuapp.com/graphql"
+    //     : "http://localhost:4001/graphql",
 });
 
 const splitLink = split(
