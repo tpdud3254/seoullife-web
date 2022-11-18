@@ -4,7 +4,6 @@ import { GoogleLogin } from "@react-oauth/google";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import * as jose from "jose";
 import { gql, useLazyQuery, useMutation } from "@apollo/client";
-import { useState } from "react";
 import { logUserIn, setAdminVar } from "../apollo";
 import { useNavigate } from "react-router-dom";
 const clientAccount = require("../client_secret.json");
@@ -26,6 +25,20 @@ const FIND_ROOM = gql`
         }
     }
 `;
+
+const Container = styled.div`
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 50px;
+`;
+const Wrapper = styled.div`
+    background-color: white;
+    padding: 20px 40px;
+    border-radius: 15px;
+`;
+
 const clientId = clientAccount["web"]["client_id"];
 
 function Login() {
@@ -48,7 +61,6 @@ function Login() {
                 startQueryFn({
                     variables: { id: userId },
                 }).then((result) => {
-                    console.log(result?.data?.findRoom?.roomId);
                     navigate("/room", {
                         state: { roomId: result?.data?.findRoom?.roomId },
                     });
@@ -75,14 +87,16 @@ function Login() {
         //TODOS: error 경우 추가
     };
     return (
-        <div>
+        <Container>
             <Helmet>
                 <title>Login | Seoul Life</title>
             </Helmet>
-            <GoogleOAuthProvider clientId={clientId}>
-                <GoogleLogin onSuccess={onSuccess} onError={onError} />
-            </GoogleOAuthProvider>
-        </div>
+            <Wrapper>
+                <GoogleOAuthProvider clientId={clientId}>
+                    <GoogleLogin onSuccess={onSuccess} onError={onError} />
+                </GoogleOAuthProvider>
+            </Wrapper>
+        </Container>
     );
 }
 

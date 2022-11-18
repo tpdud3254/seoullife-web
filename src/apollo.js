@@ -35,15 +35,6 @@ const wsLink = new GraphQLWsLink(
     })
 );
 
-// const onErrorLink = onError((graphQLErrors, networkError) => {
-//     if (graphQLErrors) {
-//         console.log("graphQL Error", graphQLErrors);
-//     }
-//     if (networkError) {
-//         console.log("network Error", networkError);
-//     }
-// });
-
 const httpLink = createHttpLink({
     uri: "https://seoul-life-webserver.herokuapp.com/graphql",
     // process.env.NODE_ENV === "production"

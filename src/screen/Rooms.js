@@ -1,5 +1,5 @@
 import { gql, useQuery, useReactiveVar } from "@apollo/client";
-import { useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { isLoggedInVar } from "../apollo";
@@ -71,6 +71,9 @@ function Rooms() {
 
     return (
         <Container>
+            <Helmet>
+                <title>Message | Seoul Life</title>
+            </Helmet>
             <Wrapper>
                 {loading ? (
                     <LoadingText>loading...</LoadingText>

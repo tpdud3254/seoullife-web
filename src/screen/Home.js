@@ -1,17 +1,9 @@
 import { Helmet } from "react-helmet-async";
 import styled from "styled-components";
 import Map from "../component/Map";
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { gql, useLazyQuery, useReactiveVar } from "@apollo/client";
 import { isAdminVar, isLoggedInVar } from "../apollo";
-import { useMediaQuery } from "react-responsive";
-import {
-    useDesktopMediaQuery,
-    useIsNotMobile,
-    useMobileMediaQuery,
-    useTabletMediaQuery,
-} from "../hooks/mediaQueryHooks";
 import { Default, Mobile } from "../styles";
 
 const Container = styled.div`
@@ -57,11 +49,6 @@ const FIND_ROOM = gql`
 const callNumber = process.env.REACT_APP_CALL_NUMBER;
 
 function Home() {
-    const isDesktop = useDesktopMediaQuery({ minWidth: 992 });
-    const isTablet = useTabletMediaQuery({ minWidth: 768, maxWidth: 991 });
-    const isMobile = useMobileMediaQuery({ maxWidth: 767 });
-    const isNotMobile = useIsNotMobile({ minWidth: 768 });
-
     const isLoggedIn = useReactiveVar(isLoggedInVar);
     const isAdmin = useReactiveVar(isAdminVar);
     const navigate = useNavigate();
@@ -79,7 +66,6 @@ function Home() {
         startQueryFn({
             variables: { id: isLoggedIn },
         }).then((result) => {
-            console.log(result?.data?.findRoom?.roomId);
             navigate("/room", {
                 state: { roomId: result?.data?.findRoom?.roomId },
             });

@@ -5,7 +5,8 @@ import {
     useQuery,
     useReactiveVar,
 } from "@apollo/client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
@@ -86,6 +87,7 @@ const Wrapper = styled.div`
     width: 100%;
     max-width: 500px;
     height: 80%;
+    min-height: 600px;
     max-height: 600px;
     overflow: scroll;
     display: flex;
@@ -113,7 +115,7 @@ const MessageText = styled.div`
 `;
 
 const Form = styled.form`
-    width: 100%;
+    width: 97%;
     max-width: 500px;
     display: flex;
     justify-content: center;
@@ -132,24 +134,34 @@ const Button = styled.input`
     border-radius: 20px;
     height: 30px;
     padding: 5px 10px 5px 10px;
-    background-color: tomato;
+    background-color: ${(props) =>
+        props.sending ? "rgb(255,99,71,0.5)" : "rgb(255,99,71)"};
     text-align: center;
     margin-left: 10px;
     color: white;
+`;
+
+const LoadingMessage = styled.div`
+    width: 100%;
+    height: 80%;
+    min-height: 500px;
+    max-height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 `;
 function Room() {
     const isNotMobile = useIsNotMobile();
     const curUserId = useReactiveVar(isLoggedInVar);
     const isAdmin = useReactiveVar(isAdminVar);
+    const [firstRead, setFirstRead] = useState(true);
     const [subscribed, setSubscribed] = useState(false);
-    const [readMessageMutation, { loading: readingMessage }] = useMutation(
-        READ_MESSAGE_MUTATION
-    );
+    const [readMessageMutation] = useMutation(READ_MESSAGE_MUTATION);
 
     const {
         state: { roomId },
     } = useLocation();
-    console.log("Room id :", roomId);
+
     const { data, loading, subscribeToMore } = useQuery(SEE_ROOM_QUERY, {
         variables: { id: roomId },
         fetchPolicy: "network-only",
@@ -161,7 +173,6 @@ function Room() {
                 sendMessage: { ok, id, userEmail },
             },
         } = result;
-
         if (ok) {
             const cacheRoomId = `Room:${roomId}`;
             const { message } = getValues();
@@ -221,11 +232,7 @@ function Room() {
         const {
             subscriptionData: {
                 data: {
-                    roomUpdates: {
-                        id,
-                        payload,
-                        user: { email },
-                    },
+                    roomUpdates: { id },
                 },
             },
         } = options;
@@ -263,12 +270,18 @@ function Room() {
                     },
                 },
             });
+
+            readMessageMutation({
+                variables: {
+                    userId: curUserId,
+                    roomId,
+                },
+            });
         }
     };
 
     useEffect(() => {
         if (data?.seeRoom && !subscribed) {
-            console.log(roomId, curUserId);
             subscribeToMore({
                 document: ROOM_UPDATES,
                 variables: {
@@ -280,64 +293,66 @@ function Room() {
             setSubscribed(true);
         }
 
-        if (data?.seeRoom.unreadTotal > 0) {
+        if (firstRead && data?.seeRoom.unreadTotal > 0) {
             readMessageMutation({
                 variables: {
                     userId: curUserId,
                     roomId,
                 },
             });
+            setFirstRead(false);
         }
 
         let last = document.getElementById("last");
         last.scrollTop = last.scrollHeight;
     }, [data]);
 
-    const {
-        register,
-        watch,
-        handleSubmit,
-        formState,
-        getValues,
-        setValue,
-        setError,
-        clearErrors,
-    } = useForm();
+    const { register, handleSubmit, getValues, setValue } = useForm();
 
-    const onSubmitValid = (data) => {
+    const onSubmitValid = () => {
         if (sendingMessage) {
             return;
         }
 
         const { message } = getValues();
-
         sendMessageMutation({
             variables: { payload: message, isAdmin, roomId, userId: curUserId },
         });
     };
     return (
         <Container isNotMobile={isNotMobile}>
+            <Helmet>
+                <title>Message | Seoul Life</title>
+            </Helmet>
             <Wrapper id="last">
-                {data?.seeRoom?.messages.map((message, index) => (
-                    <Message
-                        key={message.id}
-                        me={message.user.id === curUserId ? true : false}
-                    >
-                        <div>
-                            {message.user.id === curUserId ? null : (
-                                <Email>{message.user.email}</Email>
-                            )}
+                {loading ? (
+                    <LoadingMessage>
+                        <div>메세지 가져오는 중...</div>
+                    </LoadingMessage>
+                ) : (
+                    data?.seeRoom?.messages.map((message, index) => (
+                        <Message
+                            key={message.id}
+                            me={message.user.id === curUserId ? true : false}
+                        >
+                            <div>
+                                {message.user.id === curUserId ? null : (
+                                    <Email>{message.user.email}</Email>
+                                )}
 
-                            <MessageText
-                                me={
-                                    message.user.id === curUserId ? true : false
-                                }
-                            >
-                                {message.payload}
-                            </MessageText>
-                        </div>
-                    </Message>
-                ))}
+                                <MessageText
+                                    me={
+                                        message.user.id === curUserId
+                                            ? true
+                                            : false
+                                    }
+                                >
+                                    {message.payload}
+                                </MessageText>
+                            </div>
+                        </Message>
+                    ))
+                )}
             </Wrapper>
 
             <Form
@@ -351,7 +366,11 @@ function Room() {
                     })}
                     placeholder="메세지를 입력하세요."
                 />
-                <Button type="submit" value="보내기" />
+                <Button
+                    type="submit"
+                    value={sendingMessage ? "전송중" : "전송"}
+                    sending={sendingMessage}
+                />
             </Form>
         </Container>
     );

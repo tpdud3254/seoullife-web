@@ -44,3 +44,15 @@ export const Default = ({ children }) => {
     const isNotMobile = useMediaQuery({ minWidth: 768 });
     return isNotMobile ? children : null;
 };
+
+/* import {
+    useDesktopMediaQuery,
+    useIsNotMobile,
+    useMobileMediaQuery,
+    useTabletMediaQuery,
+} from "../hooks/mediaQueryHooks";
+
+const isDesktop = useDesktopMediaQuery({ minWidth: 992 });
+const isTablet = useTabletMediaQuery({ minWidth: 768, maxWidth: 991 });
+const isMobile = useMobileMediaQuery({ maxWidth: 767 });
+const isNotMobile = useIsNotMobile({ minWidth: 768 }); */
