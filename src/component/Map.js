@@ -27,7 +27,6 @@ function Map() {
     const [map, setMap] = useState(null);
 
     const onLoad = useCallback(function callback(map) {
-        console.log(map);
         const marker = new window.google.maps.Marker({
             position: center,
         });
@@ -37,7 +36,6 @@ function Map() {
     }, []);
 
     const onUnmount = useCallback(function callback(map) {
-        console.log("unmount");
         setMap(null);
     }, []);
     return (
