@@ -19,11 +19,13 @@ const mobileContainerStyle = {
 
 function Map() {
     const isNotMobile = useIsNotMobile();
-    const { isLoaded } = useJsApiLoader({
+    const { isLoaded, loadError } = useJsApiLoader({
         id: "google-map-script",
         googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     });
 
+    console.log("isLoaded : ", isLoaded);
+    console.log("loadError : ", loadError);
     const [map, setMap] = useState(null);
 
     const onLoad = useCallback(function callback(map) {
@@ -36,6 +38,7 @@ function Map() {
     }, []);
 
     const onUnmount = useCallback(function callback(map) {
+        console.log("unmount");
         setMap(null);
     }, []);
     return (
