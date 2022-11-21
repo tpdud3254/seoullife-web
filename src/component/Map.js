@@ -24,11 +24,10 @@ function Map() {
         googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     });
 
-    console.log("isLoaded : ", isLoaded);
-    console.log("loadError : ", loadError);
     const [map, setMap] = useState(null);
 
     const onLoad = useCallback(function callback(map) {
+        console.log(map);
         const marker = new window.google.maps.Marker({
             position: center,
         });
