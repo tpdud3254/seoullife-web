@@ -46,7 +46,7 @@ function Map() {
                         isNotMobile ? containerStyle : mobileContainerStyle
                     }
                     center={center}
-                    zoom={15}
+                    zoom={18}
                     onLoad={onLoad}
                     onUnmount={onUnmount}
                 ></GoogleMap>

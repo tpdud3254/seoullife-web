@@ -89,7 +89,7 @@ const Wrapper = styled.div`
     height: 80%;
     min-height: 600px;
     max-height: 600px;
-    overflow: scroll;
+    overflow: auto;
     display: flex;
     flex-direction: column;
 `;
